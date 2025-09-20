@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="./lib/index.js"></script>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400">不支持canvas</canvas>
+  </body>
+  <script>
+    const ele = document.getElementById("canvas");
+    const gl = ele.getContext("webgl");
+
+    const VERTEX_SHADER_SOURCE = `
+        // attribute变量只能在顶点着色器中使用
+        attribute vec4 aPosition;
+        // 必须要有main函数
+        void main(){
+        // 点的坐标
+        // vec4(1.0,0.0,0.0,1.0) x, y, z, w(齐次坐标)
+            gl_Position=aPosition; // 默认值是vec4(0.0,0.0,0.0,1.0)
+            // 点的大小
+            gl_PointSize=10.0;
+        }
+    `;
+
+    const FRAGMENT_SHADER_SOURCE = `
+        void main(){
+            // vec4(1.0,0.0,0.0,1.0) x, y, z, a(透明度)
+            gl_FragColor=vec4(1.0,0.0,0.0,1.0);
+        }
+    `;
+    const program = initShader(
+      gl,
+      VERTEX_SHADER_SOURCE,
+      FRAGMENT_SHADER_SOURCE
+    );
+
+    gl.drawArrays(gl.POINTS, 0, 1);
+  </script>
+</html>

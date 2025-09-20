@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script src="./lib/index.js"></script>
+  </head>
+  <body>
+    <canvas id="can" width="400" height="400"></canvas>
+    <script>
+      const ele = document.getElementById("can");
+      const gl = ele.getContext("webgl");
+      const VERTEX_SHADER_SOURCE = `
+            void main() {
+                gl_Position=vec4(0.0,0.0,0.0,1.0);
+                gl_PointSize=10.0;
+            }
+        `;
+      const FRAGMENT_SHADER_SOURCE = `
+            void main() {
+                gl_FragColor=vec4(1.0, 0.0, 1.0, 1.0);
+            }
+        `;
+
+      initShader(gl);
+
+      gl.drawArrays(gl.POINTS, 0, 1);
+    </script>
+  </body>
+</html>

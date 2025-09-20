@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="./lib/index.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      #canvas {
+        margin: 55px auto 0;
+        display: block;
+        background-color: yellow;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400">不支持canvas</canvas>
+  </body>
+  <script>
+    const ele = document.getElementById("canvas");
+    const gl = ele.getContext("webgl");
+
+    const VERTEX_SHADER_SOURCE = `
+        // 必须要有main函数
+        attribute vec4 aPosition;
+        void main(){
+        // 点的坐标
+        // vec4(1.0,0.0,0.0,1.0) x, y, z, w(齐次坐标)
+            gl_Position=aPosition;
+            // 点的大小
+            gl_PointSize=10.0;
+        }
+    `;
+
+    const FRAGMENT_SHADER_SOURCE = `
+        void main(){
+            // vec4(1.0,0.0,0.0,1.0) x, y, z, a(透明度)
+            gl_FragColor=vec4(1.0,0.0,0.0,1.0);
+        }
+    `;
+    const program = initShader(
+      gl,
+      VERTEX_SHADER_SOURCE,
+      FRAGMENT_SHADER_SOURCE
+    );
+
+    // 执行绘制
+    // 要绘制的图形是什么，从哪个开始， 使用几个顶点
+    // gl.drawArrays(gl.POINTS, 0, 1);
+    // gl.drawArrays(gl.LINES, 0, 1);
+    // gl.drawArrays(gl.TRIANGLES, 0, 1);
+
+    // 3个顶点
+    // 0.0  0.0  0.0
+    // 0.2  0.0  0.0
+    // 0.4  0.0  0.0
+    // gl.drawArrays(gl.POINTS, 0, 1);
+    // gl.drawArrays(gl.LINES, 1, 2);
+
+    const aPosition = gl.getAttribLocation(program, "aPosition");
+
+    ele.onclick = function (e) {
+      const left = e.clientX - ele.offsetLeft;
+      const x = e.clientX;
+      const y = e.clientY;
+      //    - ele.offsetTop;
+      const rect = e.target.getBoundingClientRect();
+      const domx = x - rect.left;
+      const domy = y - rect.top;
+
+      console.log("dom : ", domx, domy);
+
+      const halfWidth = ele.offsetWidth / 2;
+      const halfHeight = ele.offsetHeight / 2;
+      const clickX = (domx - halfWidth) / halfWidth;
+      const clickY = (halfHeight - domy) / halfHeight;
+      console.log("click : ", clickX, clickY);
+
+      gl.vertexAttrib2f(aPosition, clickX, clickY);
+      gl.drawArrays(gl.POINTS, 0, 1);
+    };
+  </script>
+</html>
