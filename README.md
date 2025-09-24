@@ -15,3 +15,6 @@
 
 ## INVALID_OPERATION: getUniformLocation: program not linked
 ![alt text](image.png)
+
+## 可绘制的图形
+![alt text](image-1.png)
