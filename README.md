@@ -18,3 +18,15 @@
 
 ## 可绘制的图形
 ![alt text](image-1.png)
+
+## INVALID_OPERATION: useProgram: program not valid
+VERTEX_SHADER_SOURCE中的gl.FragColor，应该写成gl_FragColor
+
+## INVALID_VALUE: enableVertexAttribArray: index out of range
+![alt text](image-3.png)
+
+
+## GL_INVALID_OPERATION: glDrawArrays: Vertex buffer is not big enough for the draw call.
+![alt text](image-2.png)
+
+## uniformMatrix4fv: invalid size

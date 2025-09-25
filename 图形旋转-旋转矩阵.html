@@ -19,6 +19,15 @@
         left: 0;
         background-color: aqua;
       }
+      #canvas::before {
+        content: "  ";
+        height: 1px;
+        width: 400px;
+        position: absolute;
+        left: 200px;
+        top: 0;
+        background-color: yellow;
+      }
     </style>
   </head>
   <body>
@@ -32,12 +41,13 @@
 
     const VERTEX_SHADER_SOURCE = `
         attribute vec4 aPosition;
-        attribute float aPointSize;
+        uniform mat4 mat;
         void main(){
-            gl_Position=aPosition;
-            gl_PointSize=aPointSize;
+            gl_Position=mat*aPosition;
+            gl_PointSize=5.0;
         }
     `;
+
     const FRAGMENT_SHADER_SOURCE = `
         void main(){
             // vec4(1.0,0.0,0.0,1.0) x, y, z, a(透明度)
@@ -49,31 +59,27 @@
       VERTEX_SHADER_SOURCE,
       FRAGMENT_SHADER_SOURCE
     );
-    const points = new Float32Array([
-      0.0, 0.5, 10.0, 0.5, -0.5, 20.0, -0.5, -0.5, 30.0,
-    ]);
+    const points = new Float32Array([0.0, 0.5, 0.5, -0.5, -0.5, -0.5]);
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
 
     const aPosition = gl.getAttribLocation(program, "aPosition");
-    const aPointSize = gl.getAttribLocation(program, "aPointSize");
+    const mat = gl.getUniformLocation(program, "mat");
 
-    // 每个元素的字节数
-    const BYTES = points.BYTES_PER_ELEMENT;
-    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, BYTES * 3, 0);
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
 
     gl.enableVertexAttribArray(aPosition);
 
-    gl.vertexAttribPointer(
-      aPointSize,
-      1,
-      gl.FLOAT,
-      false,
-      BYTES * 3,
-      BYTES * 2
-    );
-    gl.enableVertexAttribArray(aPointSize);
-    gl.drawArrays(gl.POINTS, 0, 3);
+    let x = 0.1;
+    function animation() {
+      x += 0.001;
+      const matrix = getRotateMatrix(x);
+      // gl.vertexAttrib1f(aTranslate, x);
+      gl.uniformMatrix4fv(mat, false, matrix);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      requestAnimationFrame(animation);
+    }
+    animation();
   </script>
 </html>
