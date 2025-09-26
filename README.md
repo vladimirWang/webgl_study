@@ -30,3 +30,10 @@ VERTEX_SHADER_SOURCE中的gl.FragColor，应该写成gl_FragColor
 ![alt text](image-2.png)
 
 ## uniformMatrix4fv: invalid size
+
+## webgl整体流程
+![alt text](image-4.png)
+
+![alt text](image-5.png)
+![alt text](image-6.png)
+![alt text](image-7.png)

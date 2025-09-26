@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="./lib/index.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      #canvas::after {
+        content: "  ";
+        height: 1px;
+        width: 400px;
+        position: absolute;
+        top: 200px;
+        left: 0;
+        background-color: aqua;
+      }
+      #canvas::before {
+        content: "  ";
+        height: 1px;
+        width: 400px;
+        position: absolute;
+        left: 200px;
+        top: 0;
+        background-color: yellow;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400" style="background-color: grey"
+      >不支持canvas</canvas
+    >
+  </body>
+  <script>
+    const ele = document.getElementById("canvas");
+    const gl = ele.getContext("webgl");
+
+    const VERTEX_SHADER_SOURCE = `
+        attribute vec4 aPosition;
+        uniform mat4 translate;
+        uniform mat4 scale;
+        uniform mat4 rotate;
+        void main(){
+            gl_Position=translate*scale*rotate*aPosition;
+            gl_PointSize=5.0;
+        }
+    `;
+
+    const FRAGMENT_SHADER_SOURCE = `
+        void main(){
+            // vec4(1.0,0.0,0.0,1.0) x, y, z, a(透明度)
+            gl_FragColor=vec4(1.0,0.0,0.0,1.0);
+        }
+    `;
+    const program = initShader(
+      gl,
+      VERTEX_SHADER_SOURCE,
+      FRAGMENT_SHADER_SOURCE
+    );
+    const points = new Float32Array([0.0, 0.5, 0.5, -0.5, -0.5, -0.5]);
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+    const aPosition = gl.getAttribLocation(program, "aPosition");
+    const aTranslate = gl.getUniformLocation(program, "translate");
+    const aRotate = gl.getUniformLocation(program, "rotate");
+    const aScale = gl.getUniformLocation(program, "scale");
+
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+    gl.enableVertexAttribArray(aPosition);
+
+    let deg = 0;
+    let translateX = -1;
+    let scale = 0.1;
+    function animation() {
+      deg += 0.01;
+      translateX += 0.01;
+      scale += 0.01;
+      if (translateX > 1) {
+        translateX = -1;
+      }
+      if (scale > 2) {
+        scale = 0.1;
+      }
+      const rotateMatrix = getRotateMatrix(deg);
+      const translateMatrix = getTranslateMatrix(translateX);
+      const scaleMatrix = getScaleMatrix(scale);
+      // gl.vertexAttrib1f(aTranslate, x);
+      gl.uniformMatrix4fv(aTranslate, false, translateMatrix);
+      gl.uniformMatrix4fv(aRotate, false, rotateMatrix);
+      gl.uniformMatrix4fv(aScale, false, scaleMatrix);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      requestAnimationFrame(animation);
+    }
+    animation();
+  </script>
+</html>

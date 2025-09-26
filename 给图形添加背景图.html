@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="./lib/index.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      #canvas::after {
+        content: "  ";
+        height: 1px;
+        width: 400px;
+        position: absolute;
+        top: 200px;
+        left: 0;
+        background-color: aqua;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400" style="background-color: grey"
+      >不支持canvas</canvas
+    >
+  </body>
+  <script>
+    const ele = document.getElementById("canvas");
+    const gl = ele.getContext("webgl");
+
+    const VERTEX_SHADER_SOURCE = `
+        attribute vec4 aPosition;
+        attribute vec4 aTex;
+        varying vec2 vTex;
+        void main(){
+            gl_Position=aPosition;
+            vTex = vec2(aTex.x, aTex.y);
+        }
+    `;
+
+    const FRAGMENT_SHADER_SOURCE = `
+        precision lowp float;
+        uniform sampler2D uSampler;
+        varying vec2 vTex;
+        void main(){
+            gl_FragColor=texture2D(uSampler, vTex);
+        }
+    `;
+    const program = initShader(
+      gl,
+      VERTEX_SHADER_SOURCE,
+      FRAGMENT_SHADER_SOURCE
+    );
+    const points = new Float32Array([
+      -0.5, -0.5, 0.0, 1.0, 0.5, -0.5, 0.0, 0.0, -0.5, 0.5, 1.0, 1.0, 0.5, 0.5,
+      1.0, 0.0,
+    ]);
+    const buffer = gl.createBuffer();
+    const BYTES = points.BYTES_PER_ELEMENT;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, points, gl.STATIC_DRAW);
+
+    const aPosition = gl.getAttribLocation(program, "aPosition");
+    const aTex = gl.getAttribLocation(program, "aTex");
+    const uSampler = gl.getUniformLocation(program, "uSampler");
+
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, BYTES * 4, 0);
+
+    gl.enableVertexAttribArray(aPosition);
+    gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, BYTES * 4, BYTES * 2);
+
+    gl.enableVertexAttribArray(aTex);
+
+    // gl.vertexAttrib2f(aPosition, x, x);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    const img = new Image();
+    img.onload = function () {
+      // 创建纹理对象
+      const texture = gl.createTexture();
+      // 翻转图片y轴
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+
+      // 开启一个纹理单元
+      gl.activeTexture(gl.TEXTURE0);
+
+      // 绑定纹理对象
+      // gl.bindTexture(type, texture)
+
+      // type 有两种
+      // gl.TEXTURE_2D 二位纹理
+      // gl.TEXTURE_CUBE_MAP 立方体纹理
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+
+      // 处理放大缩小的逻辑
+      // gl.texParamteri(type,pname, param)
+      /**
+       * type
+       * gl.TEXTURE_2D
+       */
+      /*
+        pname
+        gl.TEXTURE_MAG_FILTER  放大
+        gl.TEXTURE_MIN_FILTER  放大
+        gl.TEXTURE_WRAP_S  横向
+        gl.TEXTURE_WRAP_T  纵向
+      */
+      /**
+       * 当pname为  gl.TEXTURE_MAG_FILTER  放大或 gl.TEXTURE_MIN_FILTER  放大
+       * param
+       *
+       * gl.NEAREST 使用像素颜色值
+       * gl.LINEAR  使用四周的加权平均值
+       *
+       * 当pname为  gl.TEXTURE_WRAP_S  横向  或 gl.TEXTURE_WRAP_T  纵向
+       * param
+       *
+       * gl.REPEAT  平铺重复
+       * gl.MIRRORED_REPEAT 镜像对称
+       * gl.CLAMP_TO_EDGE   边缘延伸
+       */
+
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      // 配置纹理图像
+      /*
+       *  gl.texImage2D(type, level, internalformat, format, dataType, image)
+         type : gl.TEXTURE_2D
+         level: 0
+         internalformat（图像的内部格式）: gl.RGB, gl.RGBA, gl.ALPHA, 
+            gl.LUMINANCE(使用物体表面的红绿蓝分量的加权平均值来计算), gl.LUMINANCE_ALPHA
+          format (纹理的内部格式): 必须和internalformat相同
+          dataType（纹理数据的数据类型）: gl.UNSIGNED_BYTE 
+          gl.UNSIGNED_SHORT_5_6_5
+          gl.UNSIGNED_SHORT_4_4_4_4
+          gl.UNSIGNED_SHORT_5_5_5_1
+          image 图片对象
+       *
+       */
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      gl.uniform1i(uSampler, 0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    };
+    img.src = "./kafka.jpeg";
+  </script>
+</html>
